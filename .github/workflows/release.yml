@@ -41,9 +41,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Forge
-          path: ./forge/build/libs/!(*-@(dev|sources|dev-shadow)).jar
+          path: forge/build/libs/*.jar
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Fabric
-          path: ./fabric/build/libs/!(*-@(dev|sources|dev-shadow)).jar
+          path: fabric/build/libs/*.jar
