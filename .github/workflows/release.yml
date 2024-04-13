@@ -1,4 +1,4 @@
-name: Publish Release
+name: Build
 on:
   workflow_dispatch:
 jobs:
@@ -31,67 +31,4 @@ jobs:
           path: "./gradle.properties"
           properties: "version enabledPlatforms minecraftVersion"
 
-      - name: Publish Release
-        run: ./gradlew publish --info
-        env:
-          MAVEN_USER: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASS: ${{ secrets.MAVEN_PASSWORD }}
-
-      - name: Upload Forge Releases (Curse/Modrinth/Github)
-        id: forge_release
-        if: contains(steps.properties.outputs.enabledPlatforms, 'forge')
-        uses: Kir-Antipov/mc-publish@v3.3.0
-        with:
-          curseforge-id: ${{ vars.CURSE_ID }}
-          curseforge-token: ${{ secrets.CURSE_TOKEN }}
-
-          modrinth-id: ${{ vars.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-
-          files: ./forge/build/libs/!(*-@(dev|sources|dev-shadow)).jar
-          name: "[Forge] Heracles ${{ steps.properties.outputs.version }}"
-          version: ${{ steps.properties.outputs.version }}
-          version-type: release
-          changelog-file: changelog.md
-          loaders: forge
-          game-versions: ${{ steps.properties.outputs.minecraftVersion }}
-          version-resolver: exact
-
-          dependencies: |
-            resourceful-lib | depends | *
-
-      - name: Upload Fabric Releases (Curse/Modrinth/Github)
-        id: fabric_release
-        if: contains(steps.properties.outputs.enabledPlatforms, 'fabric')
-        uses: Kir-Antipov/mc-publish@v3.3.0
-        with:
-          curseforge-id: ${{ vars.CURSE_ID }}
-          curseforge-token: ${{ secrets.CURSE_TOKEN }}
-
-          modrinth-id: ${{ vars.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-
-          files: ./fabric/build/libs/!(*-@(dev|sources|dev-shadow)).jar
-          name: "[Fabric] Heracles ${{ steps.properties.outputs.version }}"
-          version: ${{ steps.properties.outputs.version }}
-          version-type: release
-          changelog-file: changelog.md
-          loaders: fabric
-          game-versions: ${{ steps.properties.outputs.minecraftVersion }}
-          version-resolver: exact
-
-          dependencies: |
-            fabric-api | depends | *
-            resourceful-lib | depends | *
-
-      - name: Generate Discord Embed
-        run: ./gradlew injectEmbed
-        env:
-          FORGE_RELEASE_URL: ${{ steps.forge_release.outputs.modrinth-url }}
-          FABRIC_RELEASE_URL: ${{ steps.fabric_release.outputs.modrinth-url }}
-
-      - name: Upload Discord Embed
-        uses: tsickert/discord-webhook@v5.3.0
-        with:
-          webhook-url: ${{ secrets.WEBHOOK_URL }}
-          raw-data: ./build/embed.json
+    
